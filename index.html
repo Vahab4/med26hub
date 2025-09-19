@@ -92,9 +92,8 @@
     </div>
 
     <script>
-        // Your Google Sheet ID
-        const SHEET_ID = '1o6q3uNl4oKzM0xQG9LPjORVaNo2ve10U82Ne5VeaEzA';
-        const API_KEY = 'AIzaSyDO1a2epedxBvBs-tiaP9xmzOG2hcSoIjc'; // Your Firebase API key
+        // Your Google Apps Script URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-E6su3K_fdzGsiof7n28_tt_OVs1ym4Qk9rzwy2x8X4Yc-Zfoit1rs4igIv4LOV7c/exec';
         
         let isSending = false;
 
@@ -130,44 +129,25 @@
             showStatus('📤 Sending message...', 'loading');
 
             try {
-                // Get current messages from sheet
-                const response = await fetch(
-                    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!A:B?key=${API_KEY}`
-                );
-                const data = await response.json();
-                const rows = data.values || [];
+                // Send message to Google Apps Script
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `message=${encodeURIComponent(text)}`
+                });
                 
-                // Add new message
-                const timestamp = new Date().toLocaleString();
-                const newRow = [timestamp, text];
+                const result = await response.text();
                 
-                // Prepare all data for batch update
-                const allRows = rows.length > 0 ? rows : [['Date', 'Message']];
-                allRows.push(newRow);
-                
-                // Update the sheet
-                const updateResponse = await fetch(
-                    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!A:B?key=${API_KEY}`,
-                    {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            majorDimension: 'ROWS',
-                            values: allRows
-                        })
-                    }
-                );
-
-                if (updateResponse.ok) {
+                if (result.includes('success')) {
                     document.getElementById('message').value = '';
                     showStatus('✅ Message sent!', 'success');
                     loadMessages(); // Refresh display
                 } else {
-                    throw new Error('Failed to save');
+                    throw new Error('Failed to save: ' + result);
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showStatus('❌ Failed to send message!', 'error');
+                showStatus('❌ Failed to send message! ' + error.message, 'error');
             }
             
             isSending = false;
@@ -178,24 +158,28 @@
 
         async function loadMessages() {
             try {
-                const response = await fetch(
-                    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!A:B?key=${API_KEY}`
-                );
-                const data = await response.json();
-                const rows = data.values || [];
+                const response = await fetch(SCRIPT_URL);
+                const textResult = await response.text();
+                
+                let messages;
+                try {
+                    // Try to parse as JSON
+                    messages = JSON.parse(textResult);
+                } catch {
+                    // If empty array "[]", it's valid JSON
+                    messages = [];
+                }
                 
                 const board = document.getElementById('whiteboard');
-                if (rows.length <= 1) {
+                if (!messages || messages.length === 0) {
                     board.innerHTML = '<div style="text-align:center; color:#666;">✨ No messages yet! Be the first!</div>';
                 } else {
                     // Show messages (newest first)
-                    const messages = rows.slice(1).reverse();
-                    board.innerHTML = messages.map(row => {
-                        const date = row[0] || 'Just now';
-                        const message = row[1] || '';
+                    board.innerHTML = messages.slice(0).reverse().map(msg => {
+                        const date = new Date(msg.timestamp).toLocaleString();
                         return `<div class="message">
                             <strong>${date}</strong><br>
-                            ${message}
+                            ${msg.text}
                         </div>`;
                     }).join('');
                 }
