@@ -88,16 +88,18 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        #shareLink {
-            background: #e9ecef;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-            word-break: break-all;
+        #submitBtn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
         }
         .status {
             color: #666;
             font-size: 14px;
+            margin: 10px 0;
+        }
+        .loading {
+            color: #007bff;
+            font-style: italic;
         }
     </style>
 </head>
@@ -114,26 +116,22 @@
         <h1>👋 Hello everybody</h1>
         
         <div id="whiteboard">
-            <p style="color: #666; text-align: center;">Loading messages...</p>
+            <p class="loading">🔄 Loading secret messages...</p>
         </div>
 
         <div class="submit-form">
             <input type="text" id="newMessage" placeholder="Write your secret message..." maxlength="200">
-            <button id="submitBtn" onclick="addMessage()">Add</button>
+            <button id="submitBtn" onclick="addMessage()">Add Message</button>
         </div>
         
-        <div>
-            <button onclick="shareLink()" style="background: #17a2b8; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">📤 Share This Session</button>
-            <div id="shareLink" style="display: none;"></div>
-        </div>
-        
-        <p class="status">💡 Tip: Copy the share link to continue this session on another device!</p>
+        <p class="status" id="status"></p>
     </div>
 
     <script>
-        // Simple session-based storage using URL hash
-        let messages = [];
-
+        // Pastebin API - no signup needed
+        const PASTEBIN_API = 'https://pastebin.com/api/api_post.php';
+        let pasteId = null; // Will store our paste ID
+        
         window.login = function() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -141,91 +139,114 @@
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('mainContent').style.display = 'block';
                 loadMessages();
+                // Auto-refresh every 10 seconds
+                setInterval(loadMessages, 10000);
             } else {
                 alert('❌ Wrong credentials!');
             }
         };
 
-        function addMessage() {
+        async function addMessage() {
             const messageText = document.getElementById('newMessage').value.trim();
             if (!messageText) {
                 alert('📝 Please write something!');
                 return;
             }
 
-            // Add message with timestamp
-            const timestamp = new Date().toLocaleString();
-            messages.unshift(`${timestamp}: ${messageText}`); // Newest first
+            const submitBtn = document.getElementById('submitBtn');
+            const status = document.getElementById('status');
             
-            // Save to URL hash (max 2000 chars)
-            if (encodeURIComponent(JSON.stringify(messages)).length < 1800) {
-                window.location.hash = btoa(JSON.stringify(messages));
-                displayMessages();
-                document.getElementById('newMessage').value = '';
-            } else {
-                alert('🗄️ Too many messages! Start a new session.');
-                messages = [];
-                window.location.hash = '';
-            }
-        }
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            status.textContent = '📤 Sending message...';
+            status.className = 'status loading';
 
-        function loadMessages() {
-            // Try to load from URL hash
-            if (window.location.hash) {
-                try {
-                    const decoded = atob(window.location.hash.substring(1));
-                    messages = JSON.parse(decoded);
-                    displayMessages();
-                } catch (e) {
-                    console.log('Invalid hash, starting fresh');
-                    messages = [];
-                }
-            } else {
-                messages = [];
-                displayMessages();
-            }
-        }
-
-        function displayMessages() {
-            const whiteboard = document.getElementById('whiteboard');
-            
-            if (messages.length === 0) {
-                whiteboard.innerHTML = '<p style="color: #666; text-align: center;">✨ No messages yet! Be the first to write something secret...</p>';
-            } else {
-                whiteboard.innerHTML = '';
-                messages.forEach(msg => {
-                    const p = document.createElement('p');
-                    p.textContent = msg;
-                    whiteboard.appendChild(p);
+            try {
+                // Get current messages
+                const currentMessages = await getMessages();
+                
+                // Add new message
+                const timestamp = new Date().toLocaleString();
+                const newMessage = `${timestamp}: ${messageText}`;
+                const allMessages = [newMessage, ...currentMessages].join('\n\n---\n\n');
+                
+                // Save to Pastebin
+                const formData = new FormData();
+                formData.append('api_dev_key', 'YOUR_DEV_KEY'); // Get from pastebin.com (free)
+                formData.append('api_option', 'paste');
+                formData.append('api_paste_code', allMessages);
+                formData.append('api_paste_private', '1'); // Private paste
+                formData.append('api_paste_expire_date', 'N'); // Never expire
+                
+                const response = await fetch(PASTEBIN_API, {
+                    method: 'POST',
+                    body: formData
                 });
-                whiteboard.scrollTop = 0; // Scroll to top (newest first)
+                
+                const pasteUrl = await response.text();
+                
+                if (pasteUrl.includes('pastebin.com')) {
+                    // Extract paste ID from URL
+                    pasteId = pasteUrl.split('/').pop().split('.')[0];
+                    status.textContent = '✅ Message sent!';
+                    status.className = 'status';
+                    document.getElementById('newMessage').value = '';
+                    loadMessages(); // Refresh display
+                } else {
+                    throw new Error('Failed to save');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                status.textContent = '❌ Failed to send. Try again.';
+                status.className = 'status';
+            }
+            
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Add Message';
+            setTimeout(() => status.textContent = '', 3000);
+        }
+
+        async function getMessages() {
+            try {
+                // Try to load from Pastebin
+                if (pasteId) {
+                    const response = await fetch(`https://pastebin.com/raw/${pasteId}`);
+                    if (response.ok) {
+                        const content = await response.text();
+                        return content.split('\n\n---\n\n').filter(m => m.trim());
+                    }
+                }
+                
+                // If no paste ID or failed, start fresh
+                return [];
+            } catch (error) {
+                console.log('No existing paste, starting fresh');
+                return [];
             }
         }
 
-        function shareLink() {
-            const linkDiv = document.getElementById('shareLink');
-            const currentUrl = window.location.origin + window.location.pathname + window.location.hash;
+        async function loadMessages() {
+            const whiteboard = document.getElementById('whiteboard');
+            whiteboard.innerHTML = '<p class="loading">🔄 Loading...</p>';
             
-            linkDiv.innerHTML = `
-                <strong>📱 Share this link:</strong><br>
-                <a href="${currentUrl}" target="_blank">${currentUrl}</a><br>
-                <small>💡 Copy this link to continue on another device!</small>
-            `;
-            linkDiv.style.display = 'block';
-            
-            // Auto-copy to clipboard
-            navigator.clipboard.writeText(currentUrl).then(() => {
-                alert('✅ Link copied to clipboard!');
-            }).catch(() => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = currentUrl;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert('✅ Link copied!');
-            });
+            try {
+                const messages = await getMessages();
+                
+                if (messages.length === 0) {
+                    whiteboard.innerHTML = '<p style="color: #666; text-align: center;">✨ No messages yet! Be the first to write something secret...</p>';
+                } else {
+                    whiteboard.innerHTML = '';
+                    messages.forEach(msg => {
+                        const p = document.createElement('p');
+                        p.textContent = msg;
+                        whiteboard.appendChild(p);
+                    });
+                    whiteboard.scrollTop = 0;
+                }
+            } catch (error) {
+                whiteboard.innerHTML = '<p style="color: #dc3545;">❌ Error loading messages. Refreshing...</p>';
+                setTimeout(loadMessages, 2000);
+            }
         }
 
         // Enter key support
@@ -236,17 +257,14 @@
                     addMessage();
                 }
             });
-            
-            // Auto-save every 30 seconds (in case of accidental close)
-            setInterval(() => {
-                if (window.location.hash && messages.length > 0) {
-                    window.location.hash = btoa(JSON.stringify(messages));
-                }
-            }, 30000);
         });
 
-        // Load messages on page load
-        loadMessages();
+        // Try to load existing paste ID from URL parameter (optional)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('paste')) {
+            pasteId = urlParams.get('paste');
+            loadMessages();
+        }
     </script>
 
 </body>
