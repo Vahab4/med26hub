@@ -4,10 +4,13 @@
 <meta charset="UTF-8">
 <title>Secret Anonymous Board</title>
 <style>
-  body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
-  #board { background: red; color: white; padding: 20px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
-  #message { width: 70%; padding: 10px; }
-  #sendBtn { padding: 10px 20px; }
+  body { font-family: Arial, sans-serif; background: #121212; color: #eee; padding: 20px; }
+  #board { background: #1e1e1e; padding: 20px; height: 300px; overflow-y: scroll; margin-bottom: 10px; border-radius: 12px; }
+  .message { background: #292929; padding: 10px; margin-bottom: 8px; border-radius: 8px; }
+  .timestamp { font-size: 0.8em; color: #888; margin-bottom: 5px; }
+  #message { width: 70%; padding: 10px; border-radius: 8px; border: none; background: #1e1e1e; color: #eee; }
+  #sendBtn { padding: 10px 20px; border-radius: 8px; border: none; background: #6200ee; color: white; cursor: pointer; }
+  #sendBtn:hover { background: #3700b3; }
 </style>
 </head>
 <body>
@@ -20,7 +23,7 @@
 <button id="sendBtn">Send</button>
 
 <script>
-const webAppUrl = "YOUR_WEB_APP_URL_HERE"; // <-- replace with your Web App URL
+const webAppUrl = "https://script.google.com/macros/s/AKfycbx8ghHjMU8N4i1SmGWnl0YS3lgDV2p6xYKDs5gsM6mlvGC3-ze3ONWyBXXlGKIe1J9SYw/exec";
 
 // Load all messages
 async function loadMessages() {
@@ -28,7 +31,18 @@ async function loadMessages() {
     const res = await fetch(webAppUrl);
     const messages = await res.json();
     const board = document.getElementById("board");
-    board.innerHTML = messages.map(msg => `<div>${msg}</div>`).join('');
+    
+    if(messages.length === 0){
+      board.innerHTML = "No messages yet.";
+      return;
+    }
+
+    board.innerHTML = messages.map(msg => 
+      `<div class="message">
+         <div class="timestamp">${new Date(msg.timestamp).toLocaleString()}</div>
+         <div>${msg.text}</div>
+       </div>`
+    ).join('');
     board.scrollTop = board.scrollHeight;
   } catch (e) {
     document.getElementById("board").innerText = "Unable to load messages.";
