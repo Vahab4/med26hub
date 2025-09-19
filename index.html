@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Whiteboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .login-form {
+            max-width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .login-form input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+        .login-form button {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .main-content {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #whiteboard {
+            background: white;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #whiteboard p {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            word-wrap: break-word;
+        }
+        .submit-form {
+            text-align: center;
+        }
+        #newMessage {
+            width: 60%;
+            padding: 10px;
+            margin-right: 10px;
+        }
+        #submitBtn {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Form -->
+    <div id="loginSection" class="login-form">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="main-content">
+        <h1>Hello everybody</h1>
+        
+        <div id="whiteboard">
+            <!-- Messages will be added here -->
+        </div>
+
+        <div class="submit-form">
+            <input type="text" id="newMessage" placeholder="Enter your secret message" required>
+            <button id="submitBtn" onclick="addMessage()">Submit</button>
+        </div>
+    </div>
+
+    <script>
+        // Load messages from localStorage on page load
+        loadMessages();
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (username === 'g26' && password === '1234') {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            } else {
+                alert('Invalid username or password!');
+            }
+        }
+
+        function addMessage() {
+            const messageText = document.getElementById('newMessage').value.trim();
+            if (messageText === '') {
+                alert('Please enter a message!');
+                return;
+            }
+
+            // Append to whiteboard
+            const whiteboard = document.getElementById('whiteboard');
+            const newPara = document.createElement('p');
+            newPara.textContent = messageText;
+            whiteboard.appendChild(newPara);
+
+            // Save to localStorage
+            saveMessage(messageText);
+
+            // Clear input
+            document.getElementById('newMessage').value = '';
+        }
+
+        function saveMessage(text) {
+            let messages = JSON.parse(localStorage.getItem('messages')) || [];
+            messages.push(text);
+            localStorage.setItem('messages', JSON.stringify(messages));
+        }
+
+        function loadMessages() {
+            const messages = JSON.parse(localStorage.getItem('messages')) || [];
+            const whiteboard = document.getElementById('whiteboard');
+            whiteboard.innerHTML = ''; // Clear existing content
+
+            messages.forEach(msg => {
+                const newPara = document.createElement('p');
+                newPara.textContent = msg;
+                whiteboard.appendChild(newPara);
+            });
+        }
+
+        // Allow Enter key to submit message
+        document.getElementById('newMessage').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addMessage();
+            }
+        });
+    </script>
+
+</body>
+</html>
