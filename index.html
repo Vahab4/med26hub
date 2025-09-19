@@ -70,11 +70,10 @@ function sendMessage() {
   const msg = document.getElementById('messageInput').value;
   if(!msg) return alert("Type a message!");
 
-  // Show the message immediately in a faded style
+  // Show the message immediately in normal style
   const board = document.getElementById('board');
   const p = document.createElement('p');
   p.textContent = msg;
-  p.style.opacity = '0.6';
   board.appendChild(p);
   board.scrollTo({ top: board.scrollHeight, behavior: 'smooth' });
 
