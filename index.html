@@ -1,78 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Secret Anonymous Board</title>
-<style>
-  body { font-family: Arial, sans-serif; background: #121212; color: #eee; padding: 20px; }
-  #board { background: #1e1e1e; padding: 20px; height: 300px; overflow-y: scroll; margin-bottom: 10px; border-radius: 12px; }
-  .message { background: #292929; padding: 10px; margin-bottom: 8px; border-radius: 8px; }
-  .timestamp { font-size: 0.8em; color: #888; margin-bottom: 5px; }
-  #message { width: 70%; padding: 10px; border-radius: 8px; border: none; background: #1e1e1e; color: #eee; }
-  #sendBtn { padding: 10px 20px; border-radius: 8px; border: none; background: #6200ee; color: white; cursor: pointer; }
-  #sendBtn:hover { background: #3700b3; }
-</style>
+  <meta charset="UTF-8">
+  <title>Secret Anonymous Board</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
+    #msgInput { width: 80%; padding: 8px; }
+    #sendBtn { padding: 8px 12px; }
+  </style>
 </head>
 <body>
+  <h2>Secret Anonymous Board</h2>
+  <div id="messages">Loading messages...</div>
+  <input type="text" id="msgInput" placeholder="Type your message...">
+  <button id="sendBtn">Send</button>
 
-<h1>Secret Anonymous Board</h1>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
 
-<div id="board">Loading messages...</div>
+ <!-- Firebase SDK -->
+<script type="module">
+  // Import Firebase v9 modules
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-<input type="text" id="message" placeholder="Type your secret message..." />
-<button id="sendBtn">Send</button>
+  // 🔹 Your Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyD7cdKVmIu9LN275ZiMPwze8sed3KoV_jw",
+    authDomain: "sec-911c2.firebaseapp.com",
+    databaseURL: "https://sec-911c2-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "sec-911c2",
+    storageBucket: "sec-911c2.firebasestorage.app",
+    messagingSenderId: "937732015062",
+    appId: "1:937732015062:web:ac40b3c61e96789f015a77",
+    measurementId: "G-N3VP2080RY"
+  };
 
-<script>
-const webAppUrl = "https://script.google.com/macros/s/AKfycbx8ghHjMU8N4i1SmGWnl0YS3lgDV2p6xYKDs5gsM6mlvGC3-ze3ONWyBXXlGKIe1J9SYw/exec";
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-// Load all messages
-async function loadMessages() {
-  try {
-    const res = await fetch(webAppUrl);
-    const messages = await res.json();
-    const board = document.getElementById("board");
-    
-    if(messages.length === 0){
-      board.innerHTML = "No messages yet.";
-      return;
+  const messagesDiv = document.getElementById("messages");
+  const msgInput = document.getElementById("msgInput");
+  const sendBtn = document.getElementById("sendBtn");
+
+  // Reference to "messages"
+  const messagesRef = ref(db, "messages");
+
+  // 🔹 Load messages live
+  onValue(messagesRef, (snapshot) => {
+    const data = snapshot.val();
+    messagesDiv.innerHTML = "";
+    if (data) {
+      Object.values(data).forEach(msg => {
+        const p = document.createElement("p");
+        p.textContent = msg.text;
+        messagesDiv.appendChild(p);
+      });
+    } else {
+      messagesDiv.innerHTML = "No messages yet.";
     }
+  });
 
-    board.innerHTML = messages.map(msg => 
-      `<div class="message">
-         <div class="timestamp">${new Date(msg.timestamp).toLocaleString()}</div>
-         <div>${msg.text}</div>
-       </div>`
-    ).join('');
-    board.scrollTop = board.scrollHeight;
-  } catch (e) {
-    document.getElementById("board").innerText = "Unable to load messages.";
-    console.error(e);
-  }
-}
-
-// Send a new message
-document.getElementById("sendBtn").addEventListener("click", async () => {
-  const input = document.getElementById("message");
-  const msg = input.value.trim();
-  if (!msg) return;
-
-  try {
-    await fetch(webAppUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `message=${encodeURIComponent(msg)}`
-    });
-    input.value = "";
-    loadMessages();
-  } catch (e) {
-    alert("Failed to send message");
-    console.error(e);
-  }
-});
-
-// Refresh messages every 5 seconds
-setInterval(loadMessages, 5000);
-loadMessages();
+  // 🔹 Send a new message
+  sendBtn.onclick = () => {
+    const text = msgInput.value.trim();
+    if (!text) return;
+    push(messagesRef, { text, timestamp: Date.now() });
+    msgInput.value = "";
+  };
 </script>
 
 </body>
