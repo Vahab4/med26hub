@@ -42,17 +42,33 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyD7cdKVmIu9LN275ZiMPwze8sed3KoV_jw",
-  authDomain: "sec-911c2.firebaseapp.com",
-  databaseURL: "https://sec-911c2-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "sec-911c2",
-  storageBucket: "sec-911c2.firebasestorage.app",
-  messagingSenderId: "937732015062",
-  appId: "1:937732015062:web:ac40b3c61e96789f015a77",
-  measurementId: "G-N3VP2080RY"
-};
+// 🔹 Obfuscated credentials
+const encUserParts = ["Z3", "Jv", "dXAy", "Ng=="]; // Base64 parts of reversed "group26"
+const encPassParts = ["Nj", "Y2", "Ng=="];           // Base64 parts of "666"
+
+// 🔹 Obfuscated Firebase config (Base64 + split + reversed)
+const encFirebaseParts = [
+  "eyJhcGlLZXkiOiAiQUl6YV",
+  "N5RDdjZEt2TWl1OUxOMj",
+  "c1WmlNUHc",
+  "3emUsc2VkM0tvVw==",
+  "IiwiYXV0aERvbWFpbiI6",
+  "ICJzZWMtOTExYzIuZmli",
+  "cmVhcHBhcHAuY29tIiwi",
+  "ZGF0YWJhc2VVUkwiOiAiaHR0cHM6Ly9zZWMtOTExYzItZGVmYXVsdC1ydG",
+  "RiLmFzaWEtc291dGhlYXN0MS5maXJlYmFzZWRhdGFiYXNlLmFwcCIsInByb2plY3RJZCI6ICJzZWMtOTExYzIiLCJzdG9yYWdlQnVja2V0IjogInNlYy05MTFjMi5maXJlYmFzdGVzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjogIjkzNzczMjAxNTA2MiIsImFwcElkIjogIjE6OTM3NzMyMDE1MDYyOndlYjphYzQwYjNjNjFlOTY3ODlmMDE1YTc3IiwibWVhc3VyZW1lbnRJZCI6ICJHLU4zVlAyMDhPUk0ifQ=="
+];
+
+// Decode credentials
+function decode(parts) {
+  return atob(parts.join("")).split("").reverse().join("");
+}
+
+const actualUser = decode(encUserParts);
+const actualPass = decode(encPassParts);
+
+// Decode Firebase config
+const firebaseConfig = JSON.parse(atob(encFirebaseParts.join("")));
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
@@ -73,7 +89,7 @@ loginBtn.onclick = () => {
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
 
-  if(username === "group26" && password === "666") {
+  if(username === actualUser && password === actualPass) {
     loginForm.classList.add("hidden");
     board.classList.remove("hidden");
     startBoard();
