@@ -42,33 +42,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-// 🔹 Obfuscated credentials
-const encUserParts = ["Z3", "Jv", "dXAy", "Ng=="]; // Base64 parts of reversed "group26"
-const encPassParts = ["Nj", "Y2", "Ng=="];           // Base64 parts of "666"
+// 🔹 Hidden credentials (Base64)
+const encUser = "Z3JvdXAyNg=="; // Base64 of "group26"
+const encPass = "NjY2";         // Base64 of "666"
 
-// 🔹 Obfuscated Firebase config (Base64 + split + reversed)
-const encFirebaseParts = [
-  "eyJhcGlLZXkiOiAiQUl6YV",
-  "N5RDdjZEt2TWl1OUxOMj",
-  "c1WmlNUHc",
-  "3emUsc2VkM0tvVw==",
-  "IiwiYXV0aERvbWFpbiI6",
-  "ICJzZWMtOTExYzIuZmli",
-  "cmVhcHBhcHAuY29tIiwi",
-  "ZGF0YWJhc2VVUkwiOiAiaHR0cHM6Ly9zZWMtOTExYzItZGVmYXVsdC1ydG",
-  "RiLmFzaWEtc291dGhlYXN0MS5maXJlYmFzZWRhdGFiYXNlLmFwcCIsInByb2plY3RJZCI6ICJzZWMtOTExYzIiLCJzdG9yYWdlQnVja2V0IjogInNlYy05MTFjMi5maXJlYmFzdGVzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjogIjkzNzczMjAxNTA2MiIsImFwcElkIjogIjE6OTM3NzMyMDE1MDYyOndlYjphYzQwYjNjNjFlOTY3ODlmMDE1YTc3IiwibWVhc3VyZW1lbnRJZCI6ICJHLU4zVlAyMDhPUk0ifQ=="
-];
+const actualUser = atob(encUser);
+const actualPass = atob(encPass);
 
-// Decode credentials
-function decode(parts) {
-  return atob(parts.join("")).split("").reverse().join("");
-}
-
-const actualUser = decode(encUserParts);
-const actualPass = decode(encPassParts);
-
-// Decode Firebase config
-const firebaseConfig = JSON.parse(atob(encFirebaseParts.join("")));
+// 🔹 Hidden Firebase config (Base64)
+const encFirebase = "eyJhcGlLZXkiOiAiQUl6YVNkN0N2bXNYSXYzZkJ1X1NwWE5uY2xMOUQtNTZoNkktRjFhRnpkR1giLCJhdXRoRG9tYWluIjoic2VjLTkxMWMyLmZpcmViYXNlcHJvamVjdC5hcHAuZ29vZ2xlLmNvbSIsImRhdGFiYXNlVVJMIjoiaHR0cHM6Ly9zZWMtOTExYzItZGVmYXVsdC1ydGRiLmFzaWEtc291dGhlYXN0MS5maXJlYmFzZWRhdGFiYXNlLmFwcCIsInByb2plY3RJZCI6InNlYy05MTFjMiIsInN0b3JhZ2VCdWNrZXQiOiJzZWMtOTExYzIuZmlyZWJhc3Rlc3RvcmFnZS5hcHAiLCJtZXNzYWdpbmdTZW5kZXJJZCI6IjkzNzczMjAxNTA2MiIsImFwcElkIjoiMTkzNzczMjAxNTA2Mjp3ZWI6YWM0MGIzYzYxZTk2Nzg5ZjAxNWE3NyIsIm1lYXN1cmVtZW50SWQiOiJHLU4zVlAyMDhPUk0ifQ==";
+const firebaseConfig = JSON.parse(atob(encFirebase));
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
