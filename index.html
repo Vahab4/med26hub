@@ -22,6 +22,17 @@
 
  <!-- Firebase SDK -->
 <script type="module">
+
+// Simple login
+const username = prompt("Enter username:");
+const password = prompt("Enter password:");
+
+if (username !== "group26" || password !== "666") {
+  alert("Access denied!");
+  document.body.innerHTML = "<h2>Access Denied</h2>";
+  throw new Error("Unauthorized");
+}
+
   // Import Firebase v9 modules
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
   import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
@@ -75,3 +86,4 @@
 
 </body>
 </html>
+
