@@ -43,8 +43,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase
 import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
 // 🔹 Hidden credentials (Base64)
-const encUser = "Z3JvdXAyNg=="; // Base64 of "group26"
-const encPass = "NjY2";         // Base64 of "666"
+const encUser = "Z3JvdXAyNg=="; 
+const encPass = "NjY2";         /
 
 const actualUser = atob(encUser);
 const actualPass = atob(encPass);
@@ -118,3 +118,4 @@ logoutBtn.onclick = () => {
 </script>
 </body>
 </html>
+
