@@ -20,7 +20,7 @@
 <button id="sendBtn">Send</button>
 
 <script>
-const webAppUrl = "YOUR_WEB_APP_URL_HERE"; // <-- replace with your fixed Apps Script Web App URL
+const webAppUrl = "YOUR_WEB_APP_URL_HERE"; // <-- replace with your Web App URL
 
 // Load all messages
 async function loadMessages() {
@@ -29,7 +29,7 @@ async function loadMessages() {
     const messages = await res.json();
     const board = document.getElementById("board");
     board.innerHTML = messages.map(msg => `<div>${msg}</div>`).join('');
-    board.scrollTop = board.scrollHeight; // scroll to bottom
+    board.scrollTop = board.scrollHeight;
   } catch (e) {
     document.getElementById("board").innerText = "Unable to load messages.";
     console.error(e);
@@ -49,7 +49,7 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
       body: `message=${encodeURIComponent(msg)}`
     });
     input.value = "";
-    loadMessages(); // refresh the board
+    loadMessages();
   } catch (e) {
     alert("Failed to send message");
     console.error(e);
@@ -58,7 +58,7 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
 
 // Refresh messages every 5 seconds
 setInterval(loadMessages, 5000);
-loadMessages(); // initial load
+loadMessages();
 </script>
 
 </body>
