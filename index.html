@@ -42,17 +42,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyD7cdKVmIu9LN275ZiMPwze8sed3KoV_jw",
-  authDomain: "sec-911c2.firebaseapp.com",
-  databaseURL: "https://sec-911c2-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "sec-911c2",
-  storageBucket: "sec-911c2.firebasestorage.app",
-  messagingSenderId: "937732015062",
-  appId: "1:937732015062:web:ac40b3c61e96789f015a77",
-  measurementId: "G-N3VP2080RY"
-};
+// 🔹 Hidden credentials (Base64)
+const encUser = "Z3JvdXAyNg=="; 
+const encPass = "NjY2";         // 
+
+const actualUser = atob(encUser);
+const actualPass = atob(encPass);
+
+// 🔹 Hidden Firebase config (Base64)
+const encFirebase = "eyJhcGlLZXkiOiAiQUl6YVNkN0N2bXNYSXYzZkJ1X1NwWE5uY2xMOUQtNTZoNkktRjFhRnpkR1giLCJhdXRoRG9tYWluIjoic2VjLTkxMWMyLmZpcmViYXNlcHJvamVjdC5hcHAuZ29vZ2xlLmNvbSIsImRhdGFiYXNlVVJMIjoiaHR0cHM6Ly9zZWMtOTExYzItZGVmYXVsdC1ydGRiLmFzaWEtc291dGhlYXN0MS5maXJlYmFzZWRhdGFiYXNlLmFwcCIsInByb2plY3RJZCI6InNlYy05MTFjMiIsInN0b3JhZ2VCdWNrZXQiOiJzZWMtOTExYzIuZmlyZWJhc3Rlc3RvcmFnZS5hcHAiLCJtZXNzYWdpbmdTZW5kZXJJZCI6IjkzNzczMjAxNTA2MiIsImFwcElkIjoiMTkzNzczMjAxNTA2Mjp3ZWI6YWM0MGIzYzYxZTk2Nzg5ZjAxNWE3NyIsIm1lYXN1cmVtZW50SWQiOiJHLU4zVlAyMDhPUk0ifQ==";
+const firebaseConfig = JSON.parse(atob(encFirebase));
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
@@ -73,7 +72,7 @@ loginBtn.onclick = () => {
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
 
-  if(username === "group26" && password === "666") {
+  if(username === actualUser && password === actualPass) {
     loginForm.classList.add("hidden");
     board.classList.remove("hidden");
     startBoard();
