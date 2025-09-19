@@ -37,7 +37,7 @@
 const PASSWORD = "1234";
 const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdVrAcsVi-TwSdYJqfc2xmBp1WP0cQ4sZuiFrMLqOj70ZOKSA/formResponse";
 const ENTRY_ID = "entry.1564244321";
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbxEJs06Vwa8JwIrxxs8llrKuQfWnF6VAzdO5KORx2WlMeqFvMecNGLEkXUK0Fr_gd9XFQ/exec";
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbwzmbdt-7Jg1YRtI2b4wFFlGiXsYrIbsGYtlEDJ5hHZ7KOX4sdHpVE9cXouQQtysujxFQ/exec";
 
 function checkPassword() {
   const pw = document.getElementById('pw').value;
@@ -70,11 +70,11 @@ function sendMessage() {
   const msg = document.getElementById('messageInput').value;
   if(!msg) return alert("Type a message!");
 
-  // Optimistically show the message immediately
+  // Show the message immediately in a faded style
   const board = document.getElementById('board');
   const p = document.createElement('p');
   p.textContent = msg;
-  p.style.opacity = '0.6'; // slightly faded until confirmed
+  p.style.opacity = '0.6';
   board.appendChild(p);
   board.scrollTo({ top: board.scrollHeight, behavior: 'smooth' });
 
